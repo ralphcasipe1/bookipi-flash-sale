@@ -1,0 +1,33 @@
+{
+  "name": "@flash-sale/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "npm run test:unit && npm run test:integration && npm run test:stress",
+    "test:unit": "echo \"No unit tests in app-web\"",
+    "test:integration": "echo \"No integration tests in app-web\"",
+    "test:stress": "echo \"No stress tests in app-web\"",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "types:check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@flash-sale/shared": "*",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@flash-sale/config": "*",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@unocss/vite": "66.7.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "6.0.3",
+    "unocss": "66.7.0",
+    "vite": "^7.0.0"
+  }
+}
