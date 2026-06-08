@@ -8,9 +8,12 @@ import {
 } from '@flash-sale/shared';
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 
-import { purchaseService } from '../services/purchase-service.js';
+import { PurchaseService } from '../services/purchase-service.js';
 
 export const saleRoutes: FastifyPluginAsyncZod = async (app) => {
+  const purchaseService = new PurchaseService({
+    getDb: () => app.mongo?.db,
+  });
   app.get(
     '/sale/status',
     {
