@@ -1,0 +1,35 @@
+{
+  "name": "bookipi-flash-sale",
+  "private": true,
+  "engines": {
+    "node": "24.16.0"
+  },
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "app-*",
+    "package-*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "npm run test:unit && npm run test:integration && npm run test:stress",
+    "test:unit": "turbo test:unit",
+    "test:integration": "turbo test:integration",
+    "test:stress": "turbo test:stress",
+    "lint": "turbo lint",
+    "lint:fix": "biome check --write .",
+    "format": "turbo format",
+    "format:check": "biome format .",
+    "types:check": "turbo types:check",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build:api": "docker build --target api -t flash-sale-api .",
+    "docker:build:worker": "docker build --target worker -t flash-sale-worker .",
+    "docker:up:app": "docker compose --profile app up -d --build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.16",
+    "turbo": "2.9.16",
+    "typescript": "6.0.3"
+  }
+}
