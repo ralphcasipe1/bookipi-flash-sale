@@ -6,5 +6,11 @@ export default defineConfig({
   plugins: [react(), UnoCSS()],
   server: {
     port: 5173,
+    proxy: {
+      '/sale': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
 });
