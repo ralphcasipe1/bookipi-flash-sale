@@ -25,5 +25,8 @@
   "devDependencies": {
     "@flash-sale/config": "*",
     "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }
