@@ -14,7 +14,7 @@
 git clone <repo-url>
 cd bookipi-flash-sale
 nvm use
-npm ci
+npm i
 ```
 
 ## Run (development)
