@@ -31,7 +31,6 @@ WORKDIR /app/app-api
 EXPOSE 3000
 CMD ["node", "dist/index.js"]
 
-# TODO: worker entrypoint (src/worker.ts)
 FROM runtime-base AS worker
 WORKDIR /app/app-api
 CMD ["node", "dist/worker.js"]
