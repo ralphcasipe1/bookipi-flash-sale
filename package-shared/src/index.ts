@@ -2,6 +2,8 @@ export type HealthResponse = {
   status: 'ok';
 };
 
+export { type Order, orderSchema } from './schemas/order.js';
+
 export {
   notFoundResponseSchema,
   type PurchaseLookupResponse,
