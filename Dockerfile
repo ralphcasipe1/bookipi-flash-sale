@@ -12,7 +12,7 @@ RUN npm ci
 
 FROM deps AS build
 COPY . .
-RUN npm run build -w @flash-sale/shared && npm run build -w @flash-sale/api
+RUN npm run build -w @flash-sale/shared && npm run build -w @flash-sale/api && npm run build -w @flash-sale/web
 
 FROM node:24.16.0-alpine AS runtime-base
 
@@ -35,6 +35,7 @@ FROM runtime-base AS worker
 WORKDIR /app/app-api
 CMD ["node", "dist/worker.js"]
 
-# TODO: nginx static SPA (requires app-web build in build stage)
-# FROM nginx:1.27-alpine AS web
-# COPY --from=build /app/app-web/dist /usr/share/nginx/html
+FROM nginx:1.27-alpine AS web
+COPY --from=build /app/app-web/dist /usr/share/nginx/html
+COPY app-web/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80

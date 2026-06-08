@@ -26,6 +26,7 @@
     "docker:down": "docker compose down",
     "docker:build:api": "docker build --target api -t flash-sale-api .",
     "docker:build:worker": "docker build --target worker -t flash-sale-worker .",
+    "docker:build:web": "docker build --target web -t flash-sale-web .",
     "docker:up:app": "docker compose --profile app up -d --build"
   },
   "devDependencies": {
