@@ -12,7 +12,8 @@
     "test": "npm run test:unit && npm run test:integration && npm run test:stress",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "test:stress": "echo \"k6 stress tests added in Phase 6\"",
+    "stress:reset": "tsx stress/reset-sale.ts",
+    "test:stress": "node stress/check-k6.mjs && k6 run stress/purchase.k6.js",
     "lint": "biome check .",
     "format": "biome format --write .",
     "types:check": "tsc --noEmit -p tsconfig.check.json"
