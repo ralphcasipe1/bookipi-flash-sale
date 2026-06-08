@@ -56,6 +56,11 @@ export async function attemptPurchase(userId: string, nowMs = Date.now()): Promi
   return executePurchaseScript(client, userId, nowMs);
 }
 
+export async function hasUserPurchased(userId: string): Promise<boolean> {
+  const client = await getValkeyClient();
+  return client.sismember(FLASH_SALE_KEYS.purchasedUsers, userId);
+}
+
 function parseFlashSaleConfig(raw: string): FlashSaleConfig {
   const parsed: unknown = JSON.parse(raw);
 
