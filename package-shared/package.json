@@ -1,0 +1,29 @@
+{
+  "name": "@flash-sale/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "npm run test:unit && npm run test:integration && npm run test:stress",
+    "test:unit": "echo \"No unit tests in package-shared\"",
+    "test:integration": "echo \"No integration tests in package-shared\"",
+    "test:stress": "echo \"No stress tests in package-shared\"",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "types:check": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@flash-sale/config": "*",
+    "typescript": "6.0.3"
+  }
+}

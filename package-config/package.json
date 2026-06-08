@@ -1,0 +1,15 @@
+{
+  "name": "@flash-sale/config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  },
+  "files": [
+    "tsconfig.base.json"
+  ],
+  "scripts": {
+    "lint": "biome check .",
+    "format": "biome format --write ."
+  }
+}
