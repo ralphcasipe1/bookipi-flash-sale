@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && mkdir -p dist/infrastructure/valkey && cp src/infrastructure/valkey/*.lua dist/infrastructure/valkey/",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "npm run test:unit && npm run test:integration && npm run test:stress",
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@flash-sale/shared": "*",
+    "@valkey/valkey-glide": "^2.4.1",
     "fastify": "^5.6.0"
   },
   "devDependencies": {
