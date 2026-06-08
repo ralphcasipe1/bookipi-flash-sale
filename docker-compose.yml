@@ -1,0 +1,37 @@
+services:
+  api:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: '3000'
+      HOST: '0.0.0.0'
+    depends_on:
+      valkey:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  valkey:
+    image: valkey/valkey:9.1.0-alpine3.23
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mongodb:
+    image: mongo:8.3
+    ports:
+      - '27017:27017'
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

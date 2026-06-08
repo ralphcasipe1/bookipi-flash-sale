@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.turbo
+*.md
+.env
+.env.*
+coverage
+**/*.spec.ts
+**/__tests__
+app-api/stress
