@@ -4,5 +4,6 @@ export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts'],
     exclude: ['**/__tests__/**'],
+    passWithNoTests: true,
   },
 });
