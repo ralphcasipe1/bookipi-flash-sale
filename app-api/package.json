@@ -1,0 +1,30 @@
+{
+  "name": "@flash-sale/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "npm run test:unit && npm run test:integration && npm run test:stress",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:stress": "echo \"k6 stress tests added in Phase 6\"",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "types:check": "tsc --noEmit -p tsconfig.check.json"
+  },
+  "dependencies": {
+    "@flash-sale/shared": "*",
+    "fastify": "^5.6.0"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@flash-sale/config": "*",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.3",
+    "typescript": "6.0.3",
+    "vitest": "^3.2.4"
+  }
+}
