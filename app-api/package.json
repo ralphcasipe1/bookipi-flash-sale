@@ -20,11 +20,11 @@
     "fastify": "^5.6.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.9.0",
+    "@faker-js/faker": "^10.4.0",
     "@flash-sale/config": "*",
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.13.1",
     "tsx": "^4.20.3",
     "typescript": "6.0.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.8"
   }
 }
