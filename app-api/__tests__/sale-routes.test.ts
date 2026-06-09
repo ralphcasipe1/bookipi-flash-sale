@@ -177,4 +177,35 @@ valkeyDescribe('sale routes', () => {
 
     expect(response.statusCode).toBe(400);
   });
+
+  it('POST /sale/purchase trims whitespace from userId', async () => {
+    const userId = randomUserId();
+
+    const firstResponse = await app.inject({
+      method: 'POST',
+      url: '/sale/purchase',
+      payload: { userId: `  ${userId}  ` },
+    });
+
+    const secondResponse = await app.inject({
+      method: 'POST',
+      url: '/sale/purchase',
+      payload: { userId },
+    });
+
+    expect(firstResponse.statusCode).toBe(200);
+    expect(firstResponse.json()).toEqual({ result: 'success' });
+    expect(secondResponse.statusCode).toBe(409);
+    expect(secondResponse.json()).toEqual({ result: 'already_purchased' });
+  });
+
+  it('POST /sale/purchase returns 400 when userId is only whitespace', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/sale/purchase',
+      payload: { userId: '   ' },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
 });

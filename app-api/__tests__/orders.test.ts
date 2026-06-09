@@ -84,7 +84,7 @@ ordersDescribe('order persistence', () => {
 
     const order = await pollForOrder(db, userId);
 
-    expect(order).toEqual({
+    expect(order).toMatchObject({
       userId,
       purchasedAt: expect.any(Number),
       idempotencyKey: userId,

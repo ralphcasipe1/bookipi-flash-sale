@@ -8,7 +8,7 @@ export const saleStatusResponseSchema = z.object({
 });
 
 export const purchaseRequestSchema = z.object({
-  userId: z.string().min(1),
+  userId: z.string().trim().min(1),
 });
 
 export const purchaseResultSchema = z.discriminatedUnion('result', [
@@ -26,7 +26,7 @@ export const purchaseLookupResponseSchema = z.object({
 });
 
 export const purchaseUserIdParamsSchema = z.object({
-  userId: z.string().min(1),
+  userId: z.string().trim().min(1),
 });
 
 export const notFoundResponseSchema = z.object({

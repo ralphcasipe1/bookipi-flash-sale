@@ -9,7 +9,7 @@ import { releasePurchaseScript } from '../src/infrastructure/valkey/purchase-scr
 import { closeValkeyClient } from '../src/infrastructure/valkey/valkey-client.js';
 import { restoreRealTime, useFakeSaleTime } from './helpers/fake-time.js';
 import { activeSaleConfig } from './helpers/sale-fixtures.js';
-import { randomUserIds } from './helpers/test-data.js';
+import { randomUserId, randomUserIds } from './helpers/test-data.js';
 
 const valkeyDescribe = process.env.VALKEY_URL ? describe : describe.skip;
 
@@ -47,5 +47,22 @@ valkeyDescribe('flash sale purchase concurrency', () => {
     ).toBe(true);
     expect(status.stockRemaining).toBe(0);
     expect(status.status).toBe('sold_out');
+  });
+
+  it('allows only one success when the same user purchases in parallel', async () => {
+    const userId = randomUserId();
+    const parallelAttempts = 20;
+
+    const results = await Promise.all(
+      Array.from({ length: parallelAttempts }, () => attemptPurchase(userId)),
+    );
+
+    const successes = results.filter((result) => result.result === 'success');
+    const alreadyPurchased = results.filter((result) => result.result === 'already_purchased');
+    const status = await getStatus();
+
+    expect(successes).toHaveLength(1);
+    expect(alreadyPurchased).toHaveLength(parallelAttempts - 1);
+    expect(status.stockRemaining).toBe(initialStock - 1);
   });
 });
