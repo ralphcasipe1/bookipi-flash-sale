@@ -24,13 +24,13 @@ npm install
 
 ## Quick start (local dev)
 
-Three terminals — infra, API, web:
+Three terminals: infra, API, web:
 
 ```bash
-# Terminal 1 — Valkey (:6379) + MongoDB (:27017)
+# Terminal 1: Valkey (:6379) + MongoDB (:27017)
 npm run docker:up
 
-# Terminal 2 — API (:3000) with an active sale seeded on startup
+# Terminal 2: API (:3000) with an active sale seeded on startup
 SALE_START=2026-06-08T00:00:00.000Z \
 SALE_END=2026-12-31T23:59:59.000Z \
 INITIAL_STOCK=100 \
@@ -38,7 +38,7 @@ VALKEY_URL=redis://localhost:6379 \
 MONGODB_URL=mongodb://localhost:27017/flash_sale \
 npm run dev -w @flash-sale/api
 
-# Terminal 3 — React dev server (:5173), proxies /sale → API
+# Terminal 3: React dev server (:5173), proxies /sale → API
 npm run dev -w @flash-sale/web
 ```
 
@@ -71,10 +71,10 @@ npm run dev
 ```bash
 npm run docker:up
 
-# Minimal — health check only (no sale routes without Valkey)
+# Minimal: health check only (no sale routes without Valkey)
 npm run dev -w @flash-sale/api
 
-# Full stack — Valkey inventory + MongoDB order persistence
+# Full stack: Valkey inventory + MongoDB order persistence
 VALKEY_URL=redis://localhost:6379 \
 MONGODB_URL=mongodb://localhost:27017/flash_sale \
 SALE_START=2026-06-08T00:00:00.000Z \
@@ -107,7 +107,7 @@ npm run preview -w @flash-sale/web
 
 ### Order worker (async MongoDB writes)
 
-Runs separately from the API — subscribes to Valkey pub/sub and persists orders.
+Runs separately from the API. Subscribes to Valkey pub/sub and persists orders.
 
 ```bash
 npm run docker:up
@@ -129,7 +129,7 @@ ORDER_WORKER_IN_PROCESS=false npm run dev -w @flash-sale/api
 
 ### Infra only (default)
 
-Valkey + MongoDB — use with local `npm run dev` for hot reload.
+Valkey + MongoDB. Use with local `npm run dev` for hot reload.
 
 ```bash
 npm run docker:up
@@ -167,7 +167,7 @@ If MongoDB exits immediately on OrbStack or newer kernels, the compose files alr
 
 ### Unit tests (no Docker)
 
-Pure domain logic — runs in milliseconds.
+Pure domain logic. Runs in milliseconds.
 
 ```bash
 npm run test:unit
@@ -198,11 +198,11 @@ Proves **no overselling under load**: successes must equal `INITIAL_STOCK`.
 **Prerequisites:** Valkey running, API on port 3000, [k6 installed](https://k6.io/docs/get-started/installation/).
 
 ```bash
-# Terminal 1 — API (MongoDB optional; purchase hot path is Valkey)
+# Terminal 1: API (MongoDB optional; purchase hot path is Valkey)
 npm run docker:up
 VALKEY_URL=redis://localhost:6379 npm run dev -w @flash-sale/api
 
-# Terminal 2 — reset inventory, then load test
+# Terminal 2: reset inventory, then load test
 INITIAL_STOCK=100 VALKEY_URL=redis://localhost:6379 npm run stress:reset -w @flash-sale/api
 
 API_URL=http://localhost:3000 INITIAL_STOCK=100 npm run test:stress -w @flash-sale/api
@@ -218,7 +218,7 @@ API_URL=http://localhost:3000 INITIAL_STOCK=100 npm run test:stress -w @flash-sa
 **Sample output:**
 
 ```
-── Flash sale stress summary ──
+Flash sale stress summary
 Initial stock (expected successes): 100
 Actual successes:                   100
 Sold out responses:                 400
@@ -260,10 +260,10 @@ npm run test:stress        # requires k6 + running API
 | Variable | Default | Used by | Purpose |
 |----------|---------|---------|---------|
 | `VALKEY_URL` | `redis://localhost:6379` | API, worker, stress | Valkey connection |
-| `MONGODB_URL` | — | API, worker | MongoDB connection (optional for API dev) |
-| `SALE_START` | — | API | ISO timestamp — sale window start |
-| `SALE_END` | — | API | ISO timestamp — sale window end |
-| `INITIAL_STOCK` | — | API, stress | Items available at sale start |
+| `MONGODB_URL` | (none) | API, worker | MongoDB connection (optional for API dev) |
+| `SALE_START` | (none) | API | ISO timestamp, sale window start |
+| `SALE_END` | (none) | API | ISO timestamp, sale window end |
+| `INITIAL_STOCK` | (none) | API, stress | Items available at sale start |
 | `ORDER_WORKER_IN_PROCESS` | `true` | API | Set `false` when running standalone worker |
 | `PORT` | `3000` | API | HTTP port |
 | `VITE_API_BASE_URL` | `""` | Web | API base URL (empty = relative, uses Vite proxy) |
@@ -312,9 +312,9 @@ flowchart TD
   Start([User opens flash sale page]) --> FetchStatus["GET /sale/status"]
   FetchStatus --> StatusCheck{Sale status?}
 
-  StatusCheck -->|upcoming| UpcomingUI["Sale not started — Buy disabled"]
-  StatusCheck -->|ended| EndedUI["Sale ended — Buy disabled"]
-  StatusCheck -->|sold_out| SoldOutUI["Sold out — Buy disabled"]
+  StatusCheck -->|upcoming| UpcomingUI["Sale not started, Buy disabled"]
+  StatusCheck -->|ended| EndedUI["Sale ended, Buy disabled"]
+  StatusCheck -->|sold_out| SoldOutUI["Sold out, Buy disabled"]
   StatusCheck -->|active| ActiveUI["Show stock + userId + Buy Now"]
 
   ActiveUI --> ClickBuy["POST /sale/purchase"]
@@ -331,9 +331,9 @@ flowchart TD
 
 Rules enforced end-to-end:
 
-- **One item per user** — duplicate attempts return `already_purchased`
-- **Limited stock** — when stock hits zero, status becomes `sold_out`
-- **Sale window** — purchases only while status is `active`
+- **One item per user**: duplicate attempts return `already_purchased`
+- **Limited stock**: when stock hits zero, status becomes `sold_out`
+- **Sale window**: purchases only while status is `active`
 
 ### Local architecture
 
@@ -356,7 +356,7 @@ flowchart LR
   end
 
   UI -->|HTTP| API
-  API -->|invokeScript — hot path| Valkey
+  API -->|invokeScript (hot path)| Valkey
   API -->|publish flash:orders| Valkey
   Valkey -->|pub/sub| Worker
   Worker -->|async insertOne| Mongo
@@ -370,7 +370,7 @@ flowchart LR
 3. Stock > 0
 4. Atomically decrement stock and record the buyer
 
-**Async path:** on success, publish an order event; the worker (in-process for local dev, or a separate container via `--profile app`) writes to MongoDB. Purchases still succeed if MongoDB is temporarily down — durability is eventual.
+**Async path:** on success, publish an order event; the worker (in-process for local dev, or a separate container via `--profile app`) writes to MongoDB. Purchases still succeed if MongoDB is temporarily down; durability is eventual.
 
 ### AWS production target
 
@@ -454,7 +454,7 @@ Implementation: `app-api/src/infrastructure/valkey/purchase.script.lua`
 
 | Failure | Behaviour |
 |---------|-----------|
-| Valkey down | **Fail closed** — no purchases (inventory unavailable) |
+| Valkey down | **Fail closed**: no purchases (inventory unavailable) |
 | MongoDB down | Purchases still succeed; orders queue until worker retries |
 | API task crash | In-flight request may fail; no oversell once Valkey confirms |
 | Worker crash | Messages remain in pub/sub; new worker resumes with idempotent writes |
@@ -493,7 +493,7 @@ With `INITIAL_STOCK=100` and `STRESS_ITERATIONS=500` (500 unique buyers, 100 ite
 | Oversell check | PASS |
 | p99 latency | Under 500 ms threshold (local Mac varies) |
 
-Example from a local run (100 VUs, 100 stock — all succeed):
+Example from a local run (100 VUs, 100 stock, all succeed):
 
 ```
 Actual successes:     100
@@ -501,7 +501,7 @@ Oversell check:     PASS
 p95 latency (ms):   ~36
 ```
 
-Higher concurrency (500 VUs vs 100 stock) produces ~400 `sold_out` responses — the important invariant is **successes === INITIAL_STOCK**, not total throughput alone.
+Higher concurrency (500 VUs vs 100 stock) produces ~400 `sold_out` responses. The important invariant is **successes === INITIAL_STOCK**, not total throughput alone.
 
 Local bottlenecks: single Valkey thread, Node event loop, no horizontal scaling. On AWS, ECS auto-scaling and ElastiCache cluster mode address API and HA; Valkey remains the contention point by design.
 
@@ -513,7 +513,7 @@ See [Stress test (k6)](#stress-test-k6) above for run instructions.
 
 ### Docker multi-stage targets
 
-One `Dockerfile`, three entrypoints — mirrors ECS task definitions:
+One `Dockerfile`, three entrypoints. Mirrors ECS task definitions:
 
 | Target | CMD | Purpose |
 |--------|-----|---------|
@@ -527,7 +527,7 @@ docker build --target worker -t flash-sale-worker .
 docker build --target web -t flash-sale-web .
 ```
 
-In ECS Fargate, the same ECR image artifact deploys as separate services with different `command` overrides — API tasks handle HTTP, worker tasks handle pub/sub consumption, independently scalable.
+In ECS Fargate, the same ECR image artifact deploys as separate services with different `command` overrides. API tasks handle HTTP, worker tasks handle pub/sub consumption, independently scalable.
 
 ### CI
 
