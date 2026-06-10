@@ -40,6 +40,9 @@ npm install
 
 **Goal:** Run the full stack locally and complete a purchase in the web UI.
 
+> [!IMPORTANT]
+> Start Terminal 1 (`npm run docker:up`) before the API and web servers. Sale routes require Valkey and MongoDB.
+
 Use three terminals: infra, API, and web.
 
 ```bash
@@ -85,7 +88,7 @@ npm run dev
 ```bash
 npm run docker:up
 
-# Minimal: health check only (no sale routes without Valkey)
+# Minimal: health check only
 npm run dev -w @flash-sale/api
 
 # Full stack: Valkey inventory + MongoDB order persistence
@@ -96,6 +99,9 @@ SALE_END=2026-12-31T23:59:59.000Z \
 INITIAL_STOCK=100 \
 npm run dev -w @flash-sale/api
 ```
+
+> [!NOTE]
+> The minimal API command exposes `/health` only. Set `VALKEY_URL` (and sale seed vars) to enable `/sale/*` routes.
 
 Production build:
 
@@ -131,11 +137,12 @@ MONGODB_URL=mongodb://localhost:27017/flash_sale \
 npm run dev:worker -w @flash-sale/api
 ```
 
-When the worker runs in its own process, disable the in-process subscriber on the API:
-
-```bash
-ORDER_WORKER_IN_PROCESS=false npm run dev -w @flash-sale/api
-```
+> [!TIP]
+> When the worker runs in its own process, disable the in-process subscriber on the API:
+>
+> ```bash
+> ORDER_WORKER_IN_PROCESS=false npm run dev -w @flash-sale/api
+> ```
 
 ## Docker
 
@@ -171,7 +178,8 @@ npm run docker:build:web
 
 ### MongoDB on Linux kernel 6.19+
 
-If MongoDB exits immediately on OrbStack or newer kernels, the compose files already set `GLIBC_TUNABLES=glibc.pthread.rseq=1`. See [docker-library/mongo#748](https://github.com/docker-library/mongo/discussions/748).
+> [!WARNING]
+> MongoDB may exit immediately on OrbStack or Linux kernel 6.19+. The compose files already set `GLIBC_TUNABLES=glibc.pthread.rseq=1`. See [docker-library/mongo#748](https://github.com/docker-library/mongo/discussions/748).
 
 ## Testing
 
@@ -199,12 +207,12 @@ npm run test:integration -w @flash-sale/api
 docker compose -f docker-compose.test.yml down
 ```
 
-> [!TIP]
-> CI runs the same flow automatically on push and PR.
+CI runs the same flow automatically on push and PR.
 
 ### Stress test (k6)
 
-**Goal:** Prove no overselling under load. Successes must equal `INITIAL_STOCK`.
+> [!IMPORTANT]
+> The stress test passes only when successes equal `INITIAL_STOCK`. k6 also fails on duplicate buyer wins or p99 above 500 ms.
 
 **Prerequisites:** Valkey running, API on port 3000, [k6 installed](https://k6.io/docs/get-started/installation/).
 
@@ -241,9 +249,7 @@ p95 latency (ms):                   12.4
 p99 latency (ms):                   28.6
 ```
 
-k6 fails if successes differ from `INITIAL_STOCK`, any duplicate buyer wins, or p99 exceeds 500 ms.
-
-See [Stress test expectations](#stress-test-expectations) for the full pass criteria.
+See [Stress test expectations](#stress-test-expectations) for sample output and full pass criteria.
 
 **k6 via Docker** (no local install):
 
@@ -379,7 +385,8 @@ flowchart LR
 
 ### AWS production target
 
-Same logic, AWS-managed infra. Not deployed in this take-home.
+> [!NOTE]
+> This diagram describes the intended AWS deployment. Cloud resources are not provisioned in this take-home.
 
 ```mermaid
 flowchart LR
