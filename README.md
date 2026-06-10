@@ -1,17 +1,33 @@
 # Bookipi Flash Sale
 
-High-throughput flash sale take-home: limited stock, one purchase per user, configurable sale window, and concurrency-safe inventory.
+**Core idea:** Valkey owns the purchase hot path through an atomic Lua script. MongoDB persists orders asynchronously, off the critical path.
 
-**Core idea:** Valkey owns the purchase hot path (atomic Lua script). MongoDB persists orders asynchronously off the critical path.
+## Contents
 
----
+- [Prerequisites](#prerequisites)
+- [Quick start](#quick-start-local-dev)
+- [Running services](#running-services)
+- [Docker](#docker)
+- [Testing](#testing)
+- [Environment variables](#environment-variables)
+- [Project layout](#project-layout)
+- [API endpoints](#api-endpoints)
+- [Architecture](#architecture)
+- [Design trade-offs](#design-trade-offs)
+- [Evaluation criteria](#evaluation-criteria)
+- [Stress test expectations](#stress-test-expectations)
+- [Deployment notes](#deployment-notes)
+
+## Prerequisites
 
 | Tool | Version | Required for |
 |------|---------|--------------|
 | [Node.js](https://nodejs.org/) | **24.16.0** (`.nvmrc`) | API, web, tests |
 | [Docker](https://www.docker.com/) | Latest | Valkey, MongoDB, integration tests |
 | [k6](https://k6.io/docs/get-started/installation/) | Latest | Stress tests only (`brew install k6`) |
-| npm | 11+ | Install & scripts |
+| npm | 11+ | Install and scripts |
+
+Clone and install:
 
 ```bash
 git clone <repo-url>
@@ -20,11 +36,11 @@ nvm use          # or: fnm use
 npm install
 ```
 
----
-
 ## Quick start (local dev)
 
-Three terminals: infra, API, web:
+**Goal:** Run the full stack locally and complete a purchase in the web UI.
+
+Use three terminals: infra, API, and web.
 
 ```bash
 # Terminal 1: Valkey (:6379) + MongoDB (:27017)
@@ -49,17 +65,15 @@ npm run dev -w @flash-sale/web
 | Swagger docs | http://localhost:3000/docs |
 | Sale status | http://localhost:3000/sale/status |
 
-Open the web UI, enter an email or username, click **Buy now**.
+**Verify:** Open the web UI, enter an email or username, and click **Buy now**. You should see a purchase confirmation.
 
 Stop infra when done: `npm run docker:down`
-
----
 
 ## Running services
 
 ### All at once (Turbo)
 
-Starts API + web dev servers together. You still need Docker infra running first.
+Starts API and web dev servers together. Docker infra must already be running.
 
 ```bash
 npm run docker:up
@@ -92,7 +106,7 @@ VALKEY_URL=redis://localhost:6379 npm run start -w @flash-sale/api
 
 ### Web only
 
-Requires a running API (Vite proxies `/sale` to `localhost:3000`).
+Requires a running API. Vite proxies `/sale` to `localhost:3000`.
 
 ```bash
 npm run dev -w @flash-sale/web
@@ -123,13 +137,11 @@ When the worker runs in its own process, disable the in-process subscriber on th
 ORDER_WORKER_IN_PROCESS=false npm run dev -w @flash-sale/api
 ```
 
----
-
 ## Docker
 
 ### Infra only (default)
 
-Valkey + MongoDB. Use with local `npm run dev` for hot reload.
+Valkey and MongoDB. Use with local `npm run dev` for hot reload.
 
 ```bash
 npm run docker:up
@@ -161,13 +173,11 @@ npm run docker:build:web
 
 If MongoDB exits immediately on OrbStack or newer kernels, the compose files already set `GLIBC_TUNABLES=glibc.pthread.rseq=1`. See [docker-library/mongo#748](https://github.com/docker-library/mongo/discussions/748).
 
----
-
 ## Testing
 
 ### Unit tests (no Docker)
 
-Pure domain logic. Runs in milliseconds.
+Tests pure domain logic. Runs in milliseconds.
 
 ```bash
 npm run test:unit
@@ -189,11 +199,12 @@ npm run test:integration -w @flash-sale/api
 docker compose -f docker-compose.test.yml down
 ```
 
-CI runs the same flow automatically on push/PR.
+> [!TIP]
+> CI runs the same flow automatically on push and PR.
 
 ### Stress test (k6)
 
-Proves **no overselling under load**: successes must equal `INITIAL_STOCK`.
+**Goal:** Prove no overselling under load. Successes must equal `INITIAL_STOCK`.
 
 **Prerequisites:** Valkey running, API on port 3000, [k6 installed](https://k6.io/docs/get-started/installation/).
 
@@ -230,7 +241,9 @@ p95 latency (ms):                   12.4
 p99 latency (ms):                   28.6
 ```
 
-k6 fails if successes ≠ `INITIAL_STOCK`, any duplicate buyer wins, or p99 exceeds 500 ms.
+k6 fails if successes differ from `INITIAL_STOCK`, any duplicate buyer wins, or p99 exceeds 500 ms.
+
+See [Stress test expectations](#stress-test-expectations) for the full pass criteria.
 
 **k6 via Docker** (no local install):
 
@@ -253,8 +266,6 @@ npm run test:integration   # requires test Docker infra
 npm run test:stress        # requires k6 + running API
 ```
 
----
-
 ## Environment variables
 
 | Variable | Default | Used by | Purpose |
@@ -268,9 +279,7 @@ npm run test:stress        # requires k6 + running API
 | `PORT` | `3000` | API | HTTP port |
 | `VITE_API_BASE_URL` | `""` | Web | API base URL (empty = relative, uses Vite proxy) |
 
-Sale seeding happens automatically on API startup when `VALKEY_URL`, `SALE_START`, `SALE_END`, and `INITIAL_STOCK` are all set. For stress tests, use `npm run stress:reset` to re-seed without restarting the API.
-
----
+The API seeds the sale on startup when `VALKEY_URL`, `SALE_START`, `SALE_END`, and `INITIAL_STOCK` are all set. For stress tests, run `npm run stress:reset` to re-seed without restarting the API.
 
 ## Project layout
 
@@ -289,19 +298,15 @@ docker-compose.test.yml  Isolated ports for CI/local integration tests
 Dockerfile            Multi-stage targets: api | worker | web
 ```
 
----
-
 ## API endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Health check |
-| `GET` | `/sale/status` | Sale status + remaining stock |
+| `GET` | `/sale/status` | Sale status and remaining stock |
 | `POST` | `/sale/purchase` | Attempt purchase `{ userId }` |
 | `GET` | `/sale/purchase/:userId` | Lookup prior purchase |
 | `GET` | `/docs` | Swagger UI |
-
----
 
 ## Architecture
 
@@ -331,13 +336,13 @@ flowchart TD
 
 Rules enforced end-to-end:
 
-- **One item per user**: duplicate attempts return `already_purchased`
-- **Limited stock**: when stock hits zero, status becomes `sold_out`
-- **Sale window**: purchases only while status is `active`
+- **One item per user:** duplicate attempts return `already_purchased`
+- **Limited stock:** when stock hits zero, status becomes `sold_out`
+- **Sale window:** purchases only while status is `active`
 
 ### Local architecture
 
-What runs in this repo via Docker Compose + local dev servers:
+What runs in this repo via Docker Compose and local dev servers:
 
 ```mermaid
 flowchart LR
@@ -367,14 +372,14 @@ flowchart LR
 
 1. Sale window is active
 2. User has not already purchased
-3. Stock > 0
+3. Stock is greater than zero
 4. Atomically decrement stock and record the buyer
 
-**Async path:** on success, publish an order event; the worker (in-process for local dev, or a separate container via `--profile app`) writes to MongoDB. Purchases still succeed if MongoDB is temporarily down; durability is eventual.
+**Async path:** on success, the API publishes an order event. The worker (in-process for local dev, or a separate container via `--profile app`) writes to MongoDB. Purchases still succeed if MongoDB is temporarily down; durability is eventual.
 
 ### AWS production target
 
-Same logic, AWS-managed infra (not deployed in this take-home):
+Same logic, AWS-managed infra. Not deployed in this take-home.
 
 ```mermaid
 flowchart LR
@@ -412,7 +417,7 @@ Scaling levers: horizontal ECS tasks behind ALB, ElastiCache Valkey cluster for 
 
 ### Why a Lua script?
 
-Concurrent `GET stock` + `DECR` as separate commands can oversell under load. The purchase script bundles **read → validate → write** into one atomic server-side operation.
+Concurrent `GET stock` and `DECR` as separate commands can oversell under load. The purchase script bundles **read → validate → write** into one atomic server-side operation.
 
 | Approach | Flash sale? | Why |
 |----------|-------------|-----|
@@ -435,8 +440,6 @@ sequenceDiagram
 
 Implementation: `app-api/src/infrastructure/valkey/purchase.script.lua`
 
----
-
 ## Design trade-offs
 
 | Decision | Choice | Trade-off |
@@ -446,7 +449,7 @@ Implementation: `app-api/src/infrastructure/valkey/purchase.script.lua`
 | Idempotency | Unique index on `userId` | Duplicate pub/sub deliveries are safe; no double-charge in audit trail |
 | Auth | Skipped (userId string) | Out of assessment scope; would add JWT/session in production |
 | ODM | None (`@fastify/mongodb`) | Native driver, less magic; more explicit queries |
-| Shared contracts | Zod in `package-shared` | Single schema for API validation + web types |
+| Shared contracts | Zod in `package-shared` | Single schema for API validation and web types |
 | Local worker | In-process subscriber default | Simpler dev loop; compose `worker` service mirrors ECS split |
 | Pub/sub vs queue | Valkey pub/sub | Simpler for take-home; production would use SQS + DLQ for stronger delivery |
 
@@ -454,12 +457,10 @@ Implementation: `app-api/src/infrastructure/valkey/purchase.script.lua`
 
 | Failure | Behaviour |
 |---------|-----------|
-| Valkey down | **Fail closed**: no purchases (inventory unavailable) |
+| Valkey down | **Fail closed:** no purchases (inventory unavailable) |
 | MongoDB down | Purchases still succeed; orders queue until worker retries |
 | API task crash | In-flight request may fail; no oversell once Valkey confirms |
 | Worker crash | Messages remain in pub/sub; new worker resumes with idempotent writes |
-
----
 
 ## Evaluation criteria
 
@@ -467,10 +468,10 @@ How this submission maps to the assessment rubric:
 
 | Criterion | Demonstrated by |
 |-----------|-----------------|
-| **System design** | Local + AWS diagrams; Valkey hot path; async MongoDB; Lua rationale |
+| **System design** | Local and AWS diagrams; Valkey hot path; async MongoDB; Lua rationale |
 | **Code quality** | Flat monorepo; domain separated from infra; shared Zod schemas; incremental phases |
-| **Correctness** | Lua atomic purchase; unique `userId` index; integration + k6 prove no oversell |
-| **Testing** | Vitest unit (`*.spec.ts`) + integration (`__tests__/`); parallel concurrency test; k6 stress |
+| **Correctness** | Lua atomic purchase; unique `userId` index; integration and k6 prove no oversell |
+| **Testing** | Vitest unit (`*.spec.ts`) and integration (`__tests__/`); parallel concurrency test; k6 stress |
 | **Pragmatism** | Local Docker, no cloud deploy; documented production story; auth/payment deferred |
 
 **Proof points for the interview:**
@@ -478,8 +479,6 @@ How this submission maps to the assessment rubric:
 1. *"Valkey owns the hot path; MongoDB is async and off the critical path."*
 2. *"Lua makes purchase atomic; k6 shows successes never exceed initial stock."*
 3. *"Unit tests for domain logic; integration tests hit real Valkey/MongoDB."*
-
----
 
 ## Stress test expectations
 
@@ -505,9 +504,7 @@ Higher concurrency (500 VUs vs 100 stock) produces ~400 `sold_out` responses. Th
 
 Local bottlenecks: single Valkey thread, Node event loop, no horizontal scaling. On AWS, ECS auto-scaling and ElastiCache cluster mode address API and HA; Valkey remains the contention point by design.
 
-See [Stress test (k6)](#stress-test-k6) above for run instructions.
-
----
+Run instructions: [Stress test (k6)](#stress-test-k6)
 
 ## Deployment notes
 
@@ -531,5 +528,4 @@ In ECS Fargate, the same ECR image artifact deploys as separate services with di
 
 ### CI
 
-GitHub Actions runs lint, format, typecheck, build, unit tests, and integration tests (with `docker-compose.test.yml`) on every push/PR to `main`.
-
+GitHub Actions runs lint, format, typecheck, build, unit tests, and integration tests (with `docker-compose.test.yml`) on every push and PR to `main`.
