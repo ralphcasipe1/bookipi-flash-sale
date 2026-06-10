@@ -23,14 +23,13 @@
 | Tool | Version | Required for |
 |------|---------|--------------|
 | [Node.js](https://nodejs.org/) | **24.16.0** (`.nvmrc`) | API, web, tests |
-| [Docker](https://www.docker.com/) | Latest | Valkey, MongoDB, integration tests |
-| [k6](https://k6.io/docs/get-started/installation/) | Latest | Stress tests only (`brew install k6`) |
+| [Docker](https://www.docker.com/) | Latest | Valkey, MongoDB, integration tests, stress tests (k6) |
 | npm | 11+ | Install and scripts |
 
 Clone and install:
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/ralphcasipe1/bookipi-flash-sale.git
 cd bookipi-flash-sale
 nvm use          # or: fnm use
 npm install
@@ -214,7 +213,7 @@ CI runs the same flow automatically on push and PR.
 > [!IMPORTANT]
 > The stress test passes only when successes equal `INITIAL_STOCK`. k6 also fails on duplicate buyer wins or p99 above 500 ms.
 
-**Prerequisites:** Valkey running, API on port 3000, [k6 installed](https://k6.io/docs/get-started/installation/).
+**Prerequisites:** Valkey running, API on port 3000, Docker (k6 runs in a container via `npm run test:stress`).
 
 ```bash
 # Terminal 1: API (MongoDB optional; purchase hot path is Valkey)
@@ -251,14 +250,7 @@ p99 latency (ms):                   28.6
 
 See [Stress test expectations](#stress-test-expectations) for sample output and full pass criteria.
 
-**k6 via Docker** (no local install):
-
-```bash
-docker run --rm -i \
-  -e API_URL=http://host.docker.internal:3000 \
-  -e INITIAL_STOCK=100 \
-  grafana/k6 run - < app-api/stress/purchase.k6.js
-```
+`npm run test:stress` runs [k6](https://k6.io/) in Docker (`grafana/k6`). `API_URL` defaults to `http://localhost:3000` and is rewritten to `host.docker.internal` inside the container.
 
 ### All quality checks
 
@@ -269,7 +261,7 @@ npm run types:check
 npm run build
 npm run test:unit
 npm run test:integration   # requires test Docker infra
-npm run test:stress        # requires k6 + running API
+npm run test:stress        # requires Docker + running API
 ```
 
 ## Environment variables

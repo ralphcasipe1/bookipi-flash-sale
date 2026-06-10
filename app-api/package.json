@@ -13,7 +13,7 @@
     "test:unit": "vitest run --config vitest.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "stress:reset": "tsx stress/reset-sale.ts",
-    "test:stress": "node stress/check-k6.mjs && k6 run stress/purchase.k6.js",
+    "test:stress": "node stress/run-k6-docker.js",
     "lint": "biome check .",
     "format": "biome format --write .",
     "types:check": "tsc --noEmit -p tsconfig.check.json"
