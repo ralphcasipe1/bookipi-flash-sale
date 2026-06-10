@@ -14,22 +14,22 @@ type Feedback = {
 const STATUS_META: Record<SaleStatus, { label: string; badge: string; hint: string }> = {
   upcoming: {
     label: 'Upcoming',
-    badge: 'bg-amber-500/15 text-amber-200 ring-1 ring-amber-400/30',
+    badge: 'bg-amber-100 text-amber-800 ring-2 ring-amber-200',
     hint: 'The sale has not started yet. Check back soon.',
   },
   active: {
     label: 'Live',
-    badge: 'bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-400/40',
+    badge: 'bg-emerald-100 text-emerald-800 ring-2 ring-emerald-200',
     hint: 'Limited stock — one item per customer.',
   },
   ended: {
     label: 'Ended',
-    badge: 'bg-zinc-500/20 text-zinc-300 ring-1 ring-zinc-500/40',
+    badge: 'bg-stone-200 text-stone-600 ring-2 ring-stone-300',
     hint: 'This sale window is closed.',
   },
   sold_out: {
     label: 'Sold out',
-    badge: 'bg-rose-500/15 text-rose-200 ring-1 ring-rose-400/30',
+    badge: 'bg-rose-100 text-rose-800 ring-2 ring-rose-200',
     hint: 'Everything is gone. Better luck next time.',
   },
 };
@@ -53,11 +53,11 @@ function purchaseMessage(result: PurchaseResponse): Feedback {
 function feedbackClasses(tone: Feedback['tone']): string {
   switch (tone) {
     case 'success':
-      return 'border-emerald-400/30 bg-emerald-500/10 text-emerald-100';
+      return 'border-emerald-300 bg-emerald-50 text-emerald-800';
     case 'error':
-      return 'border-rose-400/30 bg-rose-500/10 text-rose-100';
+      return 'border-rose-300 bg-rose-50 text-rose-800';
     case 'info':
-      return 'border-sky-400/30 bg-sky-500/10 text-sky-100';
+      return 'border-sky-300 bg-sky-50 text-sky-800';
   }
 }
 
@@ -155,60 +155,64 @@ export function App() {
   const statusMeta = status ? STATUS_META[status.status] : null;
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-10 text-zinc-100 font-sans">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_55%)]" />
+    <main className="min-h-screen bg-[#faf6f0] px-4 py-10 text-stone-700">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(254,215,170,0.45),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(167,243,208,0.25),transparent_50%)]" />
 
       <div className="relative mx-auto w-full max-w-md">
         <header className="mb-8 text-center">
-          <p className="mb-2 text-xs uppercase tracking-[0.35em] text-emerald-300/80">Bookipi</p>
-          <h1 className="text-4xl font-semibold tracking-tight">Flash Sale</h1>
-          <p className="mt-2 text-sm text-zinc-400">One item. One chance. High demand.</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.35em] text-teal-700/80">
+            Bookipi
+          </p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-stone-800">Flash Sale</h1>
+          <p className="mt-2 text-sm text-stone-500">One item. One chance. High demand.</p>
         </header>
 
-        <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-6 shadow-2xl shadow-black/30 backdrop-blur-sm">
+        <section className="rounded-3xl border-2 border-amber-200/80 bg-white/85 p-6 shadow-lg shadow-amber-900/8 backdrop-blur-sm">
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-wider text-zinc-500">Status</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-400">Status</p>
               {statusMeta ? (
                 <span
-                  className={`mt-2 inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusMeta.badge}`}
+                  className={`mt-2 inline-flex rounded-full px-3 py-1 text-sm font-bold ${statusMeta.badge}`}
                 >
                   {statusMeta.label}
                 </span>
               ) : (
-                <span className="mt-2 inline-block h-7 w-24 animate-pulse rounded-full bg-zinc-800" />
+                <span className="mt-2 inline-block h-7 w-24 animate-pulse rounded-full bg-amber-100" />
               )}
             </div>
 
             <div className="text-right">
-              <p className="text-xs uppercase tracking-wider text-zinc-500">In stock</p>
-              <p className="mt-1 text-3xl font-semibold tabular-nums">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-400">In stock</p>
+              <p className="mt-1 text-3xl font-extrabold tabular-nums text-teal-700">
                 {status ? status.stockRemaining : '—'}
               </p>
             </div>
           </div>
 
           {statusError ? (
-            <p className="mb-4 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            <p className="mb-4 rounded-2xl border-2 border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
               {statusError}
             </p>
           ) : null}
 
           {statusMeta ? (
-            <p className="mb-6 text-sm leading-relaxed text-zinc-400">{statusMeta.hint}</p>
+            <p className="mb-6 text-sm leading-relaxed text-stone-500">{statusMeta.hint}</p>
           ) : null}
 
           {hasPriorPurchase ? (
-            <p className="mb-6 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+            <p className="mb-6 rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
               Welcome back — your purchase is already on record for this ID.
             </p>
           ) : null}
 
           <form className="space-y-4" onSubmit={handlePurchase}>
             <label className="block">
-              <span className="mb-2 block text-sm text-zinc-400">Your ID (email or username)</span>
+              <span className="mb-2 block text-sm font-semibold text-stone-500">
+                Your ID (email or username)
+              </span>
               <input
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950/80 px-4 py-3 text-zinc-100 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                className="box-border w-full rounded-2xl border-2 border-amber-200 bg-amber-50/50 px-4 py-3 text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-teal-400 focus:ring-4 focus:ring-teal-100"
                 disabled={isPurchasing}
                 onChange={(event) => setUserId(event.target.value)}
                 placeholder="you@example.com"
@@ -218,7 +222,7 @@ export function App() {
             </label>
 
             <button
-              className="w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+              className="box-border w-full rounded-2xl border-b-4 border-teal-700 bg-teal-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-teal-400 active:translate-y-0.5 active:border-b-2 disabled:cursor-not-allowed disabled:border-stone-400 disabled:bg-stone-300 disabled:text-stone-500 disabled:active:translate-y-0"
               disabled={!canPurchase}
               type="submit"
             >
@@ -228,14 +232,14 @@ export function App() {
 
           {feedback ? (
             <p
-              className={`mt-4 rounded-xl border px-4 py-3 text-sm ${feedbackClasses(feedback.tone)}`}
+              className={`mt-4 rounded-2xl border-2 px-4 py-3 text-sm ${feedbackClasses(feedback.tone)}`}
             >
               {feedback.message}
             </p>
           ) : null}
         </section>
 
-        <p className="mt-6 text-center text-xs text-zinc-600">
+        <p className="mt-6 text-center text-xs text-stone-400">
           Status refreshes every {STATUS_POLL_MS / 1000}s
         </p>
       </div>
