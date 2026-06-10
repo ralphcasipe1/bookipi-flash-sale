@@ -24,7 +24,7 @@
 |------|---------|--------------|
 | [Node.js](https://nodejs.org/) | **24.16.0** (`.nvmrc`) | API, web, tests |
 | [Docker](https://www.docker.com/) | Latest | Valkey, MongoDB, integration tests, stress tests (k6) |
-| npm | 11+ | Install and scripts |
+| npm | 11+ | Install and scripts |`
 
 Clone and install:
 
@@ -33,7 +33,10 @@ git clone https://github.com/ralphcasipe1/bookipi-flash-sale.git
 cd bookipi-flash-sale
 nvm use          # or: fnm use
 npm install
+cp .env.example .env   # local defaults; edit as needed
 ```
+
+Dev scripts load `.env` automatically — no need to prefix commands with env vars for local work.
 
 ## Quick start (local dev)
 
@@ -49,11 +52,6 @@ Use three terminals: infra, API, and web.
 npm run docker:up
 
 # Terminal 2: API (:3000) with an active sale seeded on startup
-SALE_START=2026-06-08T00:00:00.000Z \
-SALE_END=2026-12-31T23:59:59.000Z \
-INITIAL_STOCK=100 \
-VALKEY_URL=redis://localhost:6379 \
-MONGODB_URL=mongodb://localhost:27017/flash_sale \
 npm run dev -w @flash-sale/api
 
 # Terminal 3: React dev server (:5173), proxies /sale → API
@@ -87,26 +85,21 @@ npm run dev
 ```bash
 npm run docker:up
 
-# Minimal: health check only
+# With .env (default): Valkey inventory + MongoDB order persistence
 npm run dev -w @flash-sale/api
 
-# Full stack: Valkey inventory + MongoDB order persistence
-VALKEY_URL=redis://localhost:6379 \
-MONGODB_URL=mongodb://localhost:27017/flash_sale \
-SALE_START=2026-06-08T00:00:00.000Z \
-SALE_END=2026-12-31T23:59:59.000Z \
-INITIAL_STOCK=100 \
-npm run dev -w @flash-sale/api
+# Health check only — unset Valkey so sale routes stay disabled
+VALKEY_URL= npm run dev -w @flash-sale/api
 ```
 
 > [!NOTE]
-> The minimal API command exposes `/health` only. Set `VALKEY_URL` (and sale seed vars) to enable `/sale/*` routes.
+> With `.env` copied from `.env.example`, the API seeds a sale on startup and exposes `/sale/*`. Omit `VALKEY_URL` (as above) for `/health` only.
 
 Production build:
 
 ```bash
 npm run build -w @flash-sale/shared && npm run build -w @flash-sale/api
-VALKEY_URL=redis://localhost:6379 npm run start -w @flash-sale/api
+npm run start -w @flash-sale/api   # reads env from shell or container, not --env-file
 ```
 
 ### Web only
@@ -130,18 +123,11 @@ Runs separately from the API. Subscribes to Valkey pub/sub and persists orders.
 
 ```bash
 npm run docker:up
-
-VALKEY_URL=redis://localhost:6379 \
-MONGODB_URL=mongodb://localhost:27017/flash_sale \
 npm run dev:worker -w @flash-sale/api
 ```
 
 > [!TIP]
-> When the worker runs in its own process, disable the in-process subscriber on the API:
->
-> ```bash
-> ORDER_WORKER_IN_PROCESS=false npm run dev -w @flash-sale/api
-> ```
+> When the worker runs in its own process, set `ORDER_WORKER_IN_PROCESS=false` in `.env` (see `.env.example`) and restart the API.
 
 ## Docker
 
@@ -199,6 +185,7 @@ Uses isolated ports via `docker-compose.test.yml` (Valkey **6380**, MongoDB **27
 ```bash
 docker compose -f docker-compose.test.yml up -d --wait
 
+# Use the commented test URLs from .env.example, or override inline:
 VALKEY_URL=redis://localhost:6380 \
 MONGODB_URL=mongodb://localhost:27018/flash_sale \
 npm run test:integration -w @flash-sale/api
@@ -218,12 +205,11 @@ CI runs the same flow automatically on push and PR.
 ```bash
 # Terminal 1: API (MongoDB optional; purchase hot path is Valkey)
 npm run docker:up
-VALKEY_URL=redis://localhost:6379 npm run dev -w @flash-sale/api
+npm run dev -w @flash-sale/api
 
 # Terminal 2: reset inventory, then load test
-INITIAL_STOCK=100 VALKEY_URL=redis://localhost:6379 npm run stress:reset -w @flash-sale/api
-
-API_URL=http://localhost:3000 INITIAL_STOCK=100 npm run test:stress -w @flash-sale/api
+npm run stress:reset -w @flash-sale/api
+npm run test:stress -w @flash-sale/api
 ```
 
 | Variable | Default | Purpose |
@@ -266,6 +252,8 @@ npm run test:stress        # requires Docker + running API
 
 ## Environment variables
 
+Copy `.env.example` to `.env` at the repo root. Values there are loaded by `npm run dev`, `dev:worker`, `stress:reset`, and `test:stress` without exporting vars in the shell.
+
 | Variable | Default | Used by | Purpose |
 |----------|---------|---------|---------|
 | `VALKEY_URL` | `redis://localhost:6379` | API, worker, stress | Valkey connection |
@@ -282,6 +270,7 @@ The API seeds the sale on startup when `VALKEY_URL`, `SALE_START`, `SALE_END`, a
 ## Project layout
 
 ```
+.env.example          Local dev defaults (copy to .env)
 app-api/              Fastify server (@flash-sale/api)
   src/domain/         Pure business rules (unit tested)
   src/infrastructure/ Valkey Lua inventory, MongoDB orders
