@@ -339,7 +339,7 @@ flowchart LR
 
   subgraph compute [app-api]
     API[Fastify API]
-    Worker[Order worker]
+    Worker[Order worker<br/>in-process by default]
   end
 
   subgraph data [Docker Compose]
@@ -352,7 +352,8 @@ flowchart LR
   API -->|publish flash:orders| Valkey
   Valkey -->|pub/sub| Worker
   Worker -->|async insertOne| Mongo
-  API -.->|purchase lookup| Mongo
+  API -.->|purchase lookup first| Mongo
+  API -.->|lookup fallback| Valkey
 ```
 
 **Purchase hot path** (single round-trip to Valkey):
