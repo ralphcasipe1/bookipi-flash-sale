@@ -347,13 +347,13 @@ flowchart LR
     Mongo[(MongoDB)]
   end
 
-  UI -->|HTTP| API
-  API -->|invokeScript (hot path)| Valkey
-  API -->|publish flash:orders| Valkey
-  Valkey -->|pub/sub| Worker
-  Worker -->|async insertOne| Mongo
-  API -.->|purchase lookup first| Mongo
-  API -.->|lookup fallback| Valkey
+  UI -->|"HTTP"| API
+  API -->|"invokeScript (hot path)"| Valkey
+  API -->|"publish flash:orders"| Valkey
+  Valkey -->|"pub/sub"| Worker
+  Worker -->|"async insertOne"| Mongo
+  API -.->|"purchase lookup first"| Mongo
+  API -.->|"lookup fallback"| Valkey
 ```
 
 **Purchase hot path** (single round-trip to Valkey):
