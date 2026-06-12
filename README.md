@@ -451,23 +451,6 @@ Implementation: `app-api/src/infrastructure/valkey/purchase.script.lua`
 | API task crash | In-flight request may fail; no oversell once Valkey confirms |
 | Worker crash | Messages remain in pub/sub; new worker resumes with idempotent writes |
 
-## Evaluation criteria
-
-How this submission maps to the assessment rubric:
-
-| Criterion | Demonstrated by |
-|-----------|-----------------|
-| **System design** | Local and AWS diagrams; Valkey hot path; async MongoDB; Lua rationale |
-| **Code quality** | Flat monorepo; domain separated from infra; shared Zod schemas; incremental phases |
-| **Correctness** | Lua atomic purchase; unique `userId` index; integration and k6 prove no oversell |
-| **Testing** | Vitest unit (`*.spec.ts`) and integration (`__tests__/`); parallel concurrency test; k6 stress |
-| **Pragmatism** | Local Docker, no cloud deploy; documented production story; auth/payment deferred |
-
-**Proof points for the interview:**
-
-1. *"Valkey owns the hot path; MongoDB is async and off the critical path."*
-2. *"Lua makes purchase atomic; k6 shows successes never exceed initial stock."*
-3. *"Unit tests for domain logic; integration tests hit real Valkey/MongoDB."*
 
 ## Stress test expectations
 
