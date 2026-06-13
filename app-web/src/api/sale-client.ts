@@ -7,6 +7,10 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
+function apiUrl(path: string): string {
+  return `${API_BASE}${path}`;
+}
+
 async function readJson(response: Response): Promise<unknown> {
   try {
     return await response.json();
@@ -16,7 +20,7 @@ async function readJson(response: Response): Promise<unknown> {
 }
 
 export async function fetchSaleStatus(): Promise<SaleStatusResponse> {
-  const response = await fetch(`${API_BASE}/sale/status`);
+  const response = await fetch(apiUrl('/sale/status'));
 
   if (!response.ok) {
     throw new Error('Could not load sale status');
@@ -28,7 +32,7 @@ export async function fetchSaleStatus(): Promise<SaleStatusResponse> {
 export async function attemptPurchase(
   userId: string,
 ): Promise<{ status: number; body: PurchaseResponse }> {
-  const response = await fetch(`${API_BASE}/sale/purchase`, {
+  const response = await fetch(apiUrl('/sale/purchase'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId }),
@@ -41,7 +45,7 @@ export async function attemptPurchase(
 }
 
 export async function hasExistingPurchase(userId: string): Promise<boolean> {
-  const response = await fetch(`${API_BASE}/sale/purchase/${encodeURIComponent(userId)}`);
+  const response = await fetch(apiUrl(`/sale/purchase/${encodeURIComponent(userId)}`));
 
   if (response.status === 404) {
     return false;
