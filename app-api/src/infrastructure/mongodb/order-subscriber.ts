@@ -1,7 +1,6 @@
 import {
   GlideClient,
   GlideClientConfiguration,
-  type GlideString,
   type PubSubMsg,
 } from '@valkey/valkey-glide';
 import type { Db } from 'mongodb';
@@ -40,7 +39,7 @@ export async function startOrderSubscriber(db: Db): Promise<OrderSubscriberHandl
 
 async function handleOrderMessage(db: Db, message: PubSubMsg): Promise<void> {
   try {
-    const event = parseOrderEventPayload(decodeGlideString(message.message as GlideString));
+    const event = parseOrderEventPayload(decodeGlideString(message.message));
     await saveOrder(db, event);
   } catch (error) {
     console.error('Failed to persist order from pub/sub message', error);
