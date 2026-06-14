@@ -1,8 +1,4 @@
-import {
-  GlideClient,
-  GlideClientConfiguration,
-  type PubSubMsg,
-} from '@valkey/valkey-glide';
+import { GlideClient, GlideClientConfiguration, type PubSubMsg } from '@valkey/valkey-glide';
 import type { Db } from 'mongodb';
 
 import { parseValkeyUrl } from '../valkey/valkey-client.js';
