@@ -11,6 +11,8 @@ type Feedback = {
   message: string;
 };
 
+type StockTone = 'normal' | 'low' | 'critical' | 'soldOut';
+
 const STATUS_META: Record<SaleStatus, { label: string; badge: string; hint: string }> = {
   upcoming: {
     label: 'Upcoming',
@@ -34,6 +36,13 @@ const STATUS_META: Record<SaleStatus, { label: string; badge: string; hint: stri
   },
 };
 
+const STOCK_TONE_CLASSES: Record<StockTone, string> = {
+  normal: 'text-teal-700',
+  low: 'text-amber-600',
+  critical: 'text-rose-600',
+  soldOut: 'text-stone-500',
+};
+
 function purchaseMessage(result: PurchaseResponse): Feedback {
   switch (result.result) {
     case 'success':
@@ -48,6 +57,32 @@ function purchaseMessage(result: PurchaseResponse): Feedback {
         message: result.saleStatus === 'upcoming' ? 'Sale has not started yet.' : 'Sale has ended.',
       };
   }
+}
+
+function stockTone(status: SaleStatusResponse | null): StockTone {
+  if (!status) {
+    return 'normal';
+  }
+
+  if (status.stockRemaining === 0) {
+    return 'soldOut';
+  }
+
+  if (status.initialStock <= 0) {
+    return 'normal';
+  }
+
+  const stockRatio = status.stockRemaining / status.initialStock;
+
+  if (stockRatio <= 0.1) {
+    return 'critical';
+  }
+
+  if (stockRatio <= 0.25) {
+    return 'low';
+  }
+
+  return 'normal';
 }
 
 function feedbackClasses(tone: Feedback['tone']): string {
@@ -153,6 +188,7 @@ export function App() {
   }
 
   const statusMeta = status ? STATUS_META[status.status] : null;
+  const stockClassName = STOCK_TONE_CLASSES[stockTone(status)];
 
   return (
     <main className="min-h-screen bg-[#faf6f0] px-4 py-10 text-stone-700">
@@ -184,7 +220,7 @@ export function App() {
 
             <div className="text-right">
               <p className="text-xs font-bold uppercase tracking-wider text-stone-400">In stock</p>
-              <p className="mt-1 text-3xl font-extrabold tabular-nums text-teal-700">
+              <p className={`mt-1 text-3xl font-extrabold tabular-nums ${stockClassName}`}>
                 {status ? status.stockRemaining : '—'}
               </p>
             </div>
@@ -222,7 +258,7 @@ export function App() {
             </label>
 
             <button
-              className="box-border w-full rounded-2xl border-b-4 border-teal-700 bg-teal-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-teal-400 active:translate-y-0.5 active:border-b-2 disabled:cursor-not-allowed disabled:border-stone-400 disabled:bg-stone-300 disabled:text-stone-500 disabled:active:translate-y-0"
+              className="box-border w-full rounded-2xl border-b-4 border-teal-700 bg-teal-500 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-teal-400 active:translate-y-0.5 active:border-b-2 disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-stone-400 disabled:bg-stone-300 disabled:text-stone-500 disabled:active:border-b-4 disabled:active:translate-y-0"
               disabled={!canPurchase}
               type="submit"
             >
