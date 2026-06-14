@@ -44,6 +44,7 @@ valkeyDescribe('sale routes', () => {
     expect(response.json()).toEqual({
       status: 'active',
       stockRemaining: 10,
+      initialStock: 10,
     });
   });
 
@@ -65,6 +66,7 @@ valkeyDescribe('sale routes', () => {
     expect(statusResponse.json()).toEqual({
       status: 'active',
       stockRemaining: 9,
+      initialStock: 10,
     });
   });
 

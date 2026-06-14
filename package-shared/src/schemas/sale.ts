@@ -5,6 +5,7 @@ export const saleStatusSchema = z.enum(['upcoming', 'active', 'ended', 'sold_out
 export const saleStatusResponseSchema = z.object({
   status: saleStatusSchema,
   stockRemaining: z.number().int().nonnegative(),
+  initialStock: z.number().int().nonnegative(),
 });
 
 export const purchaseRequestSchema = z.object({

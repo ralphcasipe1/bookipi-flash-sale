@@ -24,6 +24,7 @@ export class PurchaseService {
     return {
       status: snapshot.status,
       stockRemaining: snapshot.stockRemaining,
+      initialStock: snapshot.initialStock,
     };
   }
 
